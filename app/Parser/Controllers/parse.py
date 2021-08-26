@@ -39,6 +39,54 @@ def req(uri):
         return webpage
 
 
+def parseList(uri):
+    link = uri
+    i = 1
+    links = []
+    while i <= 29:
+        soup = req(link+str(i))
+        page = BeautifulSoup(soup.read(), 'lxml')
+        list = page.find_all('a', class_='letter_nav_s')
+        for a in list:
+            links.append(a.get('href'))
+        i += 1
+    print(links)
+
+
+def parseBook(uri, domain):
+    link = uri
+    soup = req(link)
+    page = BeautifulSoup(soup.read(), 'lxml')
+    td_top_color = page.find('tr', class_='td_top_color')
+    td_center_color = page.find_all('tr', class_='td_center_color')
+    params = td_center_color[0].find('p').text
+    params = params.split('\n')
+    book_params = []
+    i = 0
+    while i < len(params):
+        if params[i]:
+            j = 0
+            param = params[i].split(': ')
+            while j < len(param):
+                if param[j]:
+                    book_params.append(param[j])
+                j += 1
+        i += 1
+    i = 0
+    params = {}
+    while i < len(book_params):
+        params[book_params[i]] = book_params[i+1]
+        i+=2
+    params['Жанр'] = td_top_color.find('p').text.split('Жанр ')[1]
+    book = {}
+    book['params'] = params
+    book['text'] = re.sub(r'\s+', ' ', td_center_color[1].find('p', class_='span_str').text)
+    book['fist_page'] = domain+'/read_book.php?'+uri.split('?')[1]+'&p=1'
+    book['preview_image'] = domain+'/'+td_center_color[0].find('img').get('src')
+    print(book)
+    # print(params.split('\n'))
+
+
 def parsePage(uri, proxy):
     try:
         soup = req(uri)
@@ -59,6 +107,7 @@ def parsePage(uri, proxy):
             print(urls)
         else:
             print(content.encode('utf-8'))
+            
         # f = open('1.html', 'w', encoding='utf-8')
         # f.write(str(content))
         # f.close()
@@ -85,7 +134,7 @@ def parsePage(uri, proxy):
 def parse(argv):
     # Точка входа
     try:
-        script, url, proxy, itemId, siteId = argv
+        script, url, proxy, type, itemId, siteId = argv
     except ValueError:
         returnError(code=0, mess='Parameter is null')
 
@@ -103,7 +152,17 @@ def parse(argv):
     # opener = urllib.request.build_opener(proxy_support)
     # urllib.request.install_opener(opener)
 
-    parsePage(uri, proxy)
+    if type == 'list':
+        parseList(uri)
+    elif type == 'book':
+        parseBook(uri, domain)
+    elif type == 'page_links':
+        return
+    elif type == 'page':
+        return
+
+    # parsePage(uri, proxy)
+    # parseList()
     # jsonData = json.dumps(result)
     # print(jsonData)
     exit()
