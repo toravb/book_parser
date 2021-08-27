@@ -81,33 +81,36 @@ def parseBook(uri, domain):
     book = {}
     book['params'] = params
     book['text'] = re.sub(r'\s+', ' ', td_center_color[1].find('p', class_='span_str').text)
-    book['fist_page'] = domain+'/read_book.php?'+uri.split('?')[1]+'&p=1'
+    book['pages'] = parsePage(domain+'/read_book.php?'+uri.split('?')[1]+'&p=1', 'link')
     book['preview_image'] = domain+'/'+td_center_color[0].find('img').get('src')
     print(book)
     # print(params.split('\n'))
 
 
-def parsePage(uri, proxy):
+def parsePage(uri, type):
     try:
         soup = req(uri)
         page = BeautifulSoup(soup.read(), 'lxml')
         page.find_all('div', attrs={'style': 'text-align: left; font-size: 0.8em; margin-bottom: 10px;'})[0].decompose()
         page.find_all('div', attrs={'style': 'text-align: right; font-size: 0.8em; margin-top: 10px;'})[0].decompose()
-        content = page.find('div', class_='MsoNormal').prettify()
+        content = page.find('div', class_='MsoNormal')
 
-        if proxy == '0':
+        if type == 'link':
             nav = page.find('div', class_='navigation').find_all('a')
             pages = nav[len(nav) - 2].text
             url = uri[:-1]
-            urls = ''
+            urls = []
             i = 1
             while i <= int(pages):
-                urls += url+str(i)+','
+                urls.append(url+str(i))
                 i+=1
-            print(urls)
+            return urls
         else:
-            print(content.encode('utf-8'))
-            
+            content.find_all('img')
+            # print(content.encode('utf-8'))
+
+            print(content.prettify())
+
         # f = open('1.html', 'w', encoding='utf-8')
         # f.write(str(content))
         # f.close()
@@ -156,10 +159,8 @@ def parse(argv):
         parseList(uri)
     elif type == 'book':
         parseBook(uri, domain)
-    elif type == 'page_links':
-        return
     elif type == 'page':
-        return
+        parsePage(uri,proxy)
 
     # parsePage(uri, proxy)
     # parseList()
