@@ -81,13 +81,13 @@ def parseBook(uri, domain):
     book = {}
     book['params'] = params
     book['text'] = re.sub(r'\s+', ' ', td_center_color[1].find('p', class_='span_str').text)
-    book['pages'] = parsePage(domain+'/read_book.php?'+uri.split('?')[1]+'&p=1', 'link')
+    book['pages'] = parsePage(domain+'/read_book.php?'+uri.split('?')[1]+'&p=1', 'link', domain)
     book['preview_image'] = domain+'/'+td_center_color[0].find('img').get('src')
     print(book)
     # print(params.split('\n'))
 
 
-def parsePage(uri, type):
+def parsePage(uri, type, domain):
     try:
         soup = req(uri)
         page = BeautifulSoup(soup.read(), 'lxml')
@@ -106,10 +106,17 @@ def parsePage(uri, type):
                 i+=1
             return urls
         else:
-            content.find_all('img')
+            page_content = {}
+            page_content['content'] = content.prettify()
+            page_content['img'] = []
+            imgs = content.find_all('img')
+            i = 0
+            while i < len(imgs):
+                page_content['img'].append(domain+'/'+imgs[i].get('src'))
+                i += 1
             # print(content.encode('utf-8'))
 
-            print(content.prettify())
+            print(page_content)
 
         # f = open('1.html', 'w', encoding='utf-8')
         # f.write(str(content))
@@ -132,6 +139,18 @@ def parsePage(uri, type):
 
     except Exception as detail:
         returnError(0, uri, type(detail).__name__)
+
+
+def parseImage(uri):
+    image = req(uri).read()
+    path = uri.split('/')
+    img_dir = path[3] + '/' + path[4] + '/'
+    if not os.path.isdir(img_dir):
+        os.makedirs(img_dir)
+    f = open(img_dir + path[5], "wb")
+    f.write(image)
+    f.close()
+    print(True)
 
 
 def parse(argv):
@@ -160,7 +179,9 @@ def parse(argv):
     elif type == 'book':
         parseBook(uri, domain)
     elif type == 'page':
-        parsePage(uri,proxy)
+        parsePage(uri, type, domain)
+    elif type == 'image':
+        parseImage(uri)
 
     # parsePage(uri, proxy)
     # parseList()
