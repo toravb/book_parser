@@ -39,7 +39,7 @@ def req(uri):
         return webpage
 
 
-def parseList(uri):
+def parseLinks(uri, domain):
     link = uri
     i = 1
     links = []
@@ -48,9 +48,10 @@ def parseList(uri):
         page = BeautifulSoup(soup.read(), 'lxml')
         list = page.find_all('a', class_='letter_nav_s')
         for a in list:
-            links.append(a.get('href'))
+            links.append({'link': domain + '/' + a.get('href')})
         i += 1
-    print(links)
+    jsonData = json.dumps(links)
+    print(jsonData)
 
 
 def parseBook(uri, domain):
@@ -60,6 +61,9 @@ def parseBook(uri, domain):
     td_top_color = page.find('tr', class_='td_top_color')
     td_center_color = page.find_all('tr', class_='td_center_color')
     params = td_center_color[0].find('p').text
+    params = re.sub(r'\t+', '', params)
+    params = re.sub(r'\r+', '', params)
+
     params = params.split('\n')
     book_params = []
     i = 0
@@ -72,19 +76,43 @@ def parseBook(uri, domain):
                     book_params.append(param[j])
                 j += 1
         i += 1
+
     i = 0
-    params = {}
-    while i < len(book_params):
-        params[book_params[i]] = book_params[i+1]
-        i+=2
-    params['Жанр'] = td_top_color.find('p').text.split('Жанр ')[1]
     book = {}
-    book['params'] = params
-    book['text'] = re.sub(r'\s+', ' ', td_center_color[1].find('p', class_='span_str').text)
+    book['book'] = {}
+    book['book']['search'] = {}
+    book['book']['params'] = {}
+    params = {}
+    params['params'] = {}
+    while i < len(book_params):
+        if book_params[i] == 'Серия':
+            book['book']['search']['series'] = book_params[i+1]
+        elif book_params[i] == 'Название':
+            params['title'] = book_params[i + 1]
+        elif book_params[i] == 'Автор':
+            sub_str = ''
+            while book_params[i+1] != 'Название':
+                sub_str += book_params[i+1]
+                i += 1
+            i += 1
+            book['book']['search']['author'] = sub_str
+            continue
+        elif book_params[i] == 'Издательство':
+            book['book']['search']['publisher'] = book_params[i + 1]
+        elif book_params[i] == 'Год':
+            book['book']['search']['year'] = book_params[i + 1]
+        else:
+            params['params'][book_params[i]] = book_params[i+1]
+        i += 2
+    params['params']['Жанр'] = td_top_color.find('p').text.split('Жанр ')[1]
+    book['book']['params'] = params
+    book['book']['params']['text'] = re.sub(r'\s+', ' ', td_center_color[1].find('p', class_='span_str').text)
     book['pages'] = parsePage(domain+'/read_book.php?'+uri.split('?')[1]+'&p=1', 'link', domain)
-    book['preview_image'] = domain+'/'+td_center_color[0].find('img').get('src')
-    print(book)
-    # print(params.split('\n'))
+    book['image'] = {'link': domain+'/'+td_center_color[0].find('img').get('src')}
+
+    jsonData = json.dumps(book)
+    print(jsonData)
+
 
 
 def parsePage(uri, type, domain):
@@ -102,7 +130,7 @@ def parsePage(uri, type, domain):
             urls = []
             i = 1
             while i <= int(pages):
-                urls.append(url+str(i))
+                urls.append({'link': url+str(i)})
                 i+=1
             return urls
         else:
@@ -156,7 +184,7 @@ def parseImage(uri):
 def parse(argv):
     # Точка входа
     try:
-        script, url, proxy, type, itemId, siteId = argv
+        script, url, proxy, type = argv
     except ValueError:
         returnError(code=0, mess='Parameter is null')
 
@@ -174,8 +202,8 @@ def parse(argv):
     # opener = urllib.request.build_opener(proxy_support)
     # urllib.request.install_opener(opener)
 
-    if type == 'list':
-        parseList(uri)
+    if type == 'links':
+        parseLinks(uri, domain)
     elif type == 'book':
         parseBook(uri, domain)
     elif type == 'page':

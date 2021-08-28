@@ -29,73 +29,85 @@ class ParserController extends Controller
             if ($site->site == $request->site){
                 $data = $site;
                 $pagesStatus = DB::table('parsing_status')->where('site_id', $data->id)->select()->get();
+                $statusLinks = DB::table('jobs')->where('queue', '=', 'doParseLinks')->count();
+                $statusBooks = DB::table('jobs')->where('queue', '=', 'doParseBooks')->count();
                 $statusPages = DB::table('jobs')->where('queue', '=', 'doParsePages')->count();
                 $statusImages= DB::table('jobs')->where('queue', '=', 'doParseImages')->count();
                 $statuses = [
-                    'page' => $statusPages,
-                    'image' => $statusImages,
-                ];
-                $count =[
-                    'countPages' => DB::table('product_url')->where('site_id', $data->id)->count(),
-                    'toParsePages' => DB::table('product_url')->where('site_id', $data->id)->where('doParsePages', true)->count(),
-                    'countImages' => DB::table('images')->where('site_id', $data->id)->count(),
-                    'toParseImages' => DB::table('images')->where('site_id', $data->id)->where('doParse', true)->count(),
+                    'links' => $statusLinks,
+                    'books' => $statusBooks,
+                    'pages' => $statusPages,
+                    'images' => $statusImages,
                 ];
             }
         }
-        return view('pages.parser.parser',['site' => $data, 'parsingStatus' => $pagesStatus, 'counts' => $count, 'statuses' => $statuses] , compact('sites', $sites));
+        return view('pages.parser.parser',['site' => $data, 'parsingStatus' => $pagesStatus, 'statuses' => $statuses] , compact('sites', $sites));
     }
 
-    public function parsePage(Request $request){
+/**/
+    public function parseLink(Request $request)
+    {
+        DB::table('sites')->where('site', $request->site)->update(['doParseLinks' => true]);
+        DB::table('parsing_status')->updateOrInsert(['site_id' => $request->id, 'parse_type' => 'links'],
+            ['Count' => 0, 'Progress' => 0, 'last_parsing' => null]);
 
-        DB::table('sites')->where('site', $request->site)->update(['doParsePages' => !$request->doParsePages]);
-        //parser
-//        if ($request->doParsePages == false) {
-//            $count = DB::table('product_url')->where('site_id', $request->id)->where('doParsePages', '=', 1)->count();
-//
-//            DB::table('parsing_status')->updateOrInsert(['site_id' => $request->id, 'parse_type' => 'page'],
-//                ['Count' => $count, 'Progress' => 0, 'last_parsing' => null]);
-//        }
-//        if ($request->doParsePages == true) {
-//            DB::table('parsing_status')->updateOrInsert(['site_id' => $request->id, 'parse_type' => 'page'],['last_parsing' => now()]);
-//        }
-        //books
-
-        $book = DB::table('books')->find(1);
-        if ($book != null){
-            $a = SiteMap::getContentXml($book->url, 0);
-            $links = explode(',', $a);
-
-            for ($i = 0; $i < count($links) - 1; $i++){
-                $page = SiteMap::getContentXml($links[$i], 1);
-                DB::table('books_pages')->insert([
-                    'book_id' => $book->id,
-                    'book_page' => $i,
-                    'content' => $page
-                ]);
-            }
-        }
-
-
-        return back();
+        return back()->with('success', 'Парсинг ссылок запущен');
     }
 
-    public function parsePageImage(Request $request){
-        DB::table('sites')->where('site', $request->site)->update(['doParseImages' => !$request->doParseImages]);
-        if ($request->doParseImages == false) {
-            $count = DB::table('images')->where('site_id', $request->id)->where('doParse', '=', 1)->count();
+    public function parseBooks(Request $request)
+    {
+        DB::table('sites')->where('site', $request->site)->update(['doParseBooks' => !$request->doParseBooks]);
 
-            DB::table('parsing_status')->updateOrInsert(['site_id' => $request->id, 'parse_type' => 'image'],
+        if ($request->doParseBooks == false) {
+            $count = DB::table('book_links')->where('doParse', '=', 1)->count();
+
+            DB::table('parsing_status')->updateOrInsert(['site_id' => $request->id, 'parse_type' => 'books'],
                 ['Count' => $count, 'Progress' => 0, 'last_parsing' => null]);
         }
-        if ($request->doParseImages == true) {
+        if ($request->doParseBooks == true) {
+            DB::table('parsing_status')->updateOrInsert(['site_id' => $request->id, 'parse_type' => 'books'],['last_parsing' => now()]);
+        }
 
-            DB::table('parsing_status')->updateOrInsert(['site_id' => $request->id, 'parse_type' => 'image'],['last_parsing' => now()]);
+        return back();
+    }
+
+    public function parsePages(Request $request){
+
+        DB::table('sites')->where('site', $request->site)->update(['doParsePages' => !$request->doParsePages]);
+
+        if ($request->doParsePages == false) {
+            $count = DB::table('page_links')->where('doParse', '=', 1)->count();
+
+            DB::table('parsing_status')->updateOrInsert(['site_id' => $request->id, 'parse_type' => 'page'],
+                ['Count' => $count, 'Progress' => 0, 'last_parsing' => null]);
+        }
+        if ($request->doParsePages == true) {
+            DB::table('parsing_status')->updateOrInsert(['site_id' => $request->id, 'parse_type' => 'page'],['last_parsing' => now()]);
         }
 
 
         return back();
     }
+
+    public function parseImages(Request $request){
+
+        DB::table('sites')->where('site', $request->site)->update(['doParseImages' => !$request->doParseImages]);
+
+        if ($request->doParseImages == false) {
+            $count = DB::table('images')->where('doParse', '=', 1)->count();
+
+            DB::table('parsing_status')->updateOrInsert(['site_id' => $request->id, 'parse_type' => 'images'],
+                ['Count' => $count, 'Progress' => 0, 'last_parsing' => null]);
+        }
+        if ($request->doParsePages == true) {
+            DB::table('parsing_status')->updateOrInsert(['site_id' => $request->id, 'parse_type' => 'images'],['last_parsing' => now()]);
+        }
+
+
+        return back();
+    }
+    /**/
+
     public function parseProxy(){
         $proxy = new ProxyAggregator;
         $mess = $proxy->saveProxy();
@@ -120,29 +132,4 @@ class ParserController extends Controller
         }
     }
 
-    public function parseSiteMap(Request $request){
-        DB::table('sites')->where('id', $request->site_id)->update(['doParseSitemap' => true]);
-
-        return back()->with('success', 'Сборка sitemap запущена');
-    }
-
-    public static function getDownload(Request $request)
-    {
-        $file= storage_path('parser'). "/parser.xlsx";
-        if (file_exists($file)) {
-
-            $headers = [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ];
-//            DB::table('sites')->where('id', $request->id)->update(['downloadedExcel' => true]);
-            return response()->download($file, 'parser.xlsx', $headers);
-        }
-        return back()->with('error', 'Файла не существует');
-    }
-
-    public static function generateExcel(Request $request)
-    {
-        DB::table('sites')->where('id', $request->id)->update(['downloadedExcel' => true]);
-        return back();
-    }
 }

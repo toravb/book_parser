@@ -18,9 +18,13 @@ Route::get('/', function () {
     return redirect('login');
 });
 
-//Route::get('/test', 'App\Http\Controllers\Test@test');
 
 Route::get('/dashboard', 'App\Http\Controllers\Parser\Admin\DashboardController@main')->middleware(['auth'])->name('dashboard');
+
+Route::post('/parser/links', 'App\Http\Controllers\Parser\Admin\ParserController@parseLink')->middleware(['auth'])->name('parser.parse.links');
+Route::post('/parser/books', 'App\Http\Controllers\Parser\Admin\ParserController@parseBooks')->middleware(['auth'])->name('parser.parse.books');
+Route::post('/parser/pages', 'App\Http\Controllers\Parser\Admin\ParserController@parsePages')->middleware(['auth'])->name('parser.parse.pages');
+Route::post('/parser/images', 'App\Http\Controllers\Parser\Admin\ParserController@parseImages')->middleware(['auth'])->name('parser.parse.images');
 
 Route::post('/add/auth', 'App\Http\Controllers\Parser\Admin\ProxySettingsController@addAuthData')->middleware(['auth'])->name('add.authdata');
 Route::get('/parser/pages', 'App\Http\Controllers\Parser\Admin\PageController@index')->middleware(['auth'])->name( 'parser.pages');

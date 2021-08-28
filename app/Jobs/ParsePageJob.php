@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Parser\Controllers\SiteMap;
+use App\Http\Controllers\ParserController;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -32,6 +32,6 @@ class ParsePageJob implements ShouldQueue
      */
     public function handle()
     {
-        SiteMap::getProductXml(1);
+        ParserController::parsePages();
     }
 }

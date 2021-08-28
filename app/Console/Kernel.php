@@ -2,16 +2,13 @@
 
 namespace App\Console;
 
-use App\Http\Middleware\TrimStrings;
-use App\Jobs\GenerateExcelJob;
+use App\Http\Controllers\ParserController;
+use App\Jobs\ParseBookJob;
 use App\Jobs\ParseImageJob;
+use App\Jobs\ParseLinksJob;
 use App\Jobs\ParsePageJob;
-use App\Jobs\ParseSitemapJob;
-//use App\Models\Site;
-use App\Parser\Controllers\SiteMap;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use App\Parser\Controllers\ProxyAggregator;
 use Illuminate\Support\Facades\DB;
 
 class Kernel extends ConsoleKernel
@@ -48,13 +45,13 @@ class Kernel extends ConsoleKernel
 //            ->everyMinute()
 //            ->withoutOverlapping();
 //
-        $basicdecor = DB::table('sites')->where('site', '=', 'basicdecor.ru')
+        $loveread = DB::table('sites')->where('site', '=', 'loveread.ec')
             ->select()->first();
 
-        $schedule->job((new ParsePageJob)::dispatchIf($basicdecor->doParsePages)->onQueue('doParsePages'))->everyFiveMinutes();
-        $schedule->job((new ParseImageJob())::dispatchIf($basicdecor->doParseImages)->onQueue('doParseImages'))->everyFiveMinutes();
-        $schedule->job((new GenerateExcelJob())::dispatchIf($basicdecor->downloadedExcel)->onQueue('default'))->everyMinute();
-        $schedule->job((new ParseSitemapJob())::dispatchIf($basicdecor->doParseSitemap)->onQueue('default'))->everyMinute();
+//        $schedule->job((new ParseLinksJob)::dispatchIf($loveread->doParseLinks)->onQueue('default'))->everyFiveMinutes();
+        $schedule->job((new ParseBookJob)::dispatchIf($loveread->doParseBooks)->onQueue('doParseBooks'))->everyFiveMinutes();
+//        $schedule->job((new ParsePageJob)::dispatchIf($loveread->doParsePages)->onQueue('doParsePages'))->everyFiveMinutes();
+//        $schedule->job((new ParseImageJob())::dispatchIf($loveread->doParseImages)->onQueue('doParseImages'))->everyFiveMinutes();
     }
 
     /**

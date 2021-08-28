@@ -15,14 +15,18 @@ class CreateImagesTable extends Migration
     {
         Schema::create('images', function (Blueprint $table) {
             $table->id();
-            $table->integer('site_id')->index('site_id');
-            $table->integer('item_id')->index('item_id');
-            $table->boolean('Status')->nullable();
-            $table->boolean('isDeleted')->default(false);
-            $table->string('link', 300)->index('link');
-            $table->timestamp('date')->nullable();
+            $table->foreignId('page_id')->nullable();
+            $table->foreignId('book_id')->nullable();
+            $table->string('link', 120);
             $table->boolean('doParse')->default(true);
-            $table->string('proxy_ip', 30)->nullable();
+            $table->foreign('book_id')
+                ->references('id')
+                ->on('books')
+                ->onDelete('cascade');
+            $table->foreign('page_id')
+                ->references('id')
+                ->on('pages')
+                ->onDelete('cascade');
         });
     }
 

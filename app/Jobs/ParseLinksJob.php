@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Parser\Controllers\SiteMap;
+use App\Http\Controllers\ParserController;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -10,7 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class ParseSitemapJob implements ShouldQueue
+class ParseLinksJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -31,6 +31,6 @@ class ParseSitemapJob implements ShouldQueue
      */
     public function handle()
     {
-        SiteMap::getSiteMapXml(1);
+        ParserController::parseLinks();
     }
 }

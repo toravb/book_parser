@@ -17,10 +17,10 @@ class CreateSitesTable extends Migration
             $table->id();
             $table->string('site', 100);
             $table->string('site_url', 300);
+            $table->boolean('doParseLinks')->default(false);
+            $table->boolean('doParseBooks')->default(false);
             $table->boolean('doParsePages')->default(false);
             $table->boolean('doParseImages')->default(false);
-            $table->boolean('doParseSitemap')->default(false);
-            $table->boolean('downloadedExcel')->default(false);
         });
     }
 
