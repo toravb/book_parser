@@ -58,61 +58,67 @@ def parseBook(uri, domain):
     link = uri
     soup = req(link)
     page = BeautifulSoup(soup.read(), 'lxml')
-    td_top_color = page.find('tr', class_='td_top_color')
     td_center_color = page.find_all('tr', class_='td_center_color')
-    params = td_center_color[0].find('p').text
-    params = re.sub(r'\t+', '', params)
-    params = re.sub(r'\r+', '', params)
 
-    params = params.split('\n')
-    book_params = []
-    i = 0
-    while i < len(params):
-        if params[i]:
-            j = 0
-            param = params[i].split(': ')
-            while j < len(param):
-                if param[j]:
-                    book_params.append(param[j])
-                j += 1
-        i += 1
+    text = td_center_color[0].find('p').text
 
-    i = 0
     book = {}
     book['book'] = {}
-    book['book']['search'] = {}
-    book['book']['params'] = {}
-    params = {}
-    params['params'] = {}
-    while i < len(book_params):
-        if book_params[i] == 'Серия':
-            book['book']['search']['series'] = book_params[i+1]
-        elif book_params[i] == 'Название':
-            params['title'] = book_params[i + 1]
-        elif book_params[i] == 'Автор':
-            sub_str = ''
-            while book_params[i+1] != 'Название':
-                sub_str += book_params[i+1]
-                i += 1
+    book['search'] = {}
+    book['database'] = {}
+    authors = []
+    title = ''
+    series = ''
+    year = ''
+    publishers = []
+
+    for r in method(text, ['Автор:'], 'Название:'):
+        parse_authors = r
+        parse_authors = parse_authors.split(',')
+        i = 0
+        while i < len(parse_authors):
+            authors.append({'author': parse_authors[i].lstrip().rstrip()})
             i += 1
-            book['book']['search']['author'] = sub_str
-            continue
-        elif book_params[i] == 'Издательство':
-            book['book']['search']['publisher'] = book_params[i + 1]
-        elif book_params[i] == 'Год':
-            book['book']['search']['year'] = book_params[i + 1]
-        else:
-            params['params'][book_params[i]] = book_params[i+1]
-        i += 2
-    params['params']['Жанр'] = td_top_color.find('p').text.split('Жанр ')[1]
-    book['book']['params'] = params
-    book['book']['params']['text'] = re.sub(r'\s+', ' ', td_center_color[1].find('p', class_='span_str').text)
+
+    for r in method(text, ['Название:'], 'Издательство:'):
+        title += r
+    for r in method(text, ['Издательство:'], 'Год:'):
+        parse_publishers = r
+        parse_publishers = parse_publishers.split(',')
+        i = 0
+        while i < len(parse_publishers):
+            publishers.append({'publisher': parse_publishers[i].lstrip().rstrip()})
+            i += 1
+
+    for r in method(text, ['Год:'], 'ISBN:'):
+        year += r
+    for r in method(text, ['Серия:'], 'Автор:'):
+        series += r
+
+    book['search']['authors'] = authors
+    book['search']['publishers'] = publishers
+    book['search']['year'] = {'year': year}
+    book['search']['series'] = {'series': series}
+
+    print(book['search'])
+    exit()
+
+    book['database']['text'] = re.sub(r'\s+', ' ', td_center_color[1].find('p', class_='span_str').text)
+    book['database']['title'] = title
     book['pages'] = parsePage(domain+'/read_book.php?'+uri.split('?')[1]+'&p=1', 'link', domain)
     book['image'] = {'link': domain+'/'+td_center_color[0].find('img').get('src')}
 
     jsonData = json.dumps(book)
     print(jsonData)
 
+
+def method(string, words, end_word):
+    segments = string.split(end_word)
+    counter = 0
+    while counter < len(words):
+        data = segments[counter].split(words[counter])[-1]
+        counter += 1
+        yield data.strip()
 
 
 def parsePage(uri, type, domain):

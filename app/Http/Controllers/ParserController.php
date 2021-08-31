@@ -37,21 +37,24 @@ class ParserController extends Controller
         $link = BookLink::where('doParse', true)->first();
         $data = self::startParsing($link->link, 'book')['data'];
 
-        $book = $data['book']['params'];
-        $book['author_id'] = (isset($data['book']['search']['author']))?Author::firstOrCreate(['author' =>$data['book']['search']['author']])->id:null;
-        $book['series_id'] = (isset($data['book']['search']['series']))?Series::firstOrCreate(['series' =>$data['book']['search']['series']])->id:null;
-        $book['publisher_id'] = (isset($data['book']['search']['publisher']))?Publisher::firstOrCreate(['publisher' =>$data['book']['search']['publisher']])->id:null;
-        $book['year_id'] = (isset($data['book']['search']['year']))?Year::firstOrCreate(['year' =>$data['book']['search']['year']])->id:null;
-        $book['params'] = json_encode($book['params']);
-        $book['link'] = $link->link;
-
-        $created_book = Book::firstOrCreate($book);
-        $created_book->image()->create($data['image']);
-        $created_book->pageLinks()->createMany($data['pages']);
-
+        print_r($data);
+//        exit();
+//
+//        $book = $data['book']['params'];
+//        $book['author_id'] = (isset($data['book']['search']['author']))?Author::firstOrCreate(['author' =>$data['book']['search']['author']])->id:null;
+//        $book['series_id'] = (isset($data['book']['search']['series']))?Series::firstOrCreate(['series' =>$data['book']['search']['series']])->id:null;
+//        $book['publisher_id'] = (isset($data['book']['search']['publisher']))?Publisher::firstOrCreate(['publisher' =>$data['book']['search']['publisher']])->id:null;
+//        $book['year_id'] = (isset($data['book']['search']['year']))?Year::firstOrCreate(['year' =>$data['book']['search']['year']])->id:null;
+//        $book['params'] = json_encode($book['params']);
+//        $book['link'] = $link->link;
+//
+//        $created_book = Book::firstOrCreate($book);
+//        $created_book->image()->create($data['image']);
+//        $created_book->pageLinks()->createMany($data['pages']);
+//
         $link->update(['doParse' => false]);
-        DB::table('parsing_status')->where('parse_type', '=', 'books')->increment('Progress');
-
+//        DB::table('parsing_status')->where('parse_type', '=', 'books')->increment('Progress');
+//
         ParseBookJob::dispatch()->onQueue('doParseBooks');
     }
 

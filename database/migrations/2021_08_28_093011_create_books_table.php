@@ -17,18 +17,9 @@ class CreateBooksTable extends Migration
             $table->id();
             $table->string('title');
             $table->text('text');
-            $table->foreignId('author_id')->nullable();
-            $table->foreignId('publisher_id')->nullable();
             $table->foreignId('series_id')->nullable();
             $table->foreignId('year_id')->nullable();
             $table->string('link', 120);
-            $table->json('params');
-            $table->foreign('author_id')
-                ->references('id')
-                ->on('authors');
-            $table->foreign('publisher_id')
-                ->references('id')
-                ->on('publishers');
             $table->foreign('series_id')
                 ->references('id')
                 ->on('series');
