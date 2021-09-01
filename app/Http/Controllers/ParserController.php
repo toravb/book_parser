@@ -51,9 +51,9 @@ class ParserController extends Controller
                 $search = $data['search'];
                 $book['year_id'] = ($search['year'] != null) ? Year::firstOrCreate(['year' => $search['year']])->id : null;
                 $book['series_id'] = ($search['series'] != null) ? Series::firstOrCreate(['series' => $search['series']])->id : null;
-                $book['link'] = $link->link;
+//                $book['link'] = $link->link;
                 $book['params'] = json_encode($data['params']);
-                $created_book = Book::firstOrCreate($book);
+                $created_book = Book::firstOrCreate(['link' => $link->link], $book);
                 if ($created_book->wasRecentlyCreated) {
 
                     $author_to_books = [];
@@ -100,6 +100,7 @@ class ParserController extends Controller
             if (!$link) {
                 DB::table('sites')->where('site', '=', 'loveread.ec')->update(['doParsePages' => false]);
             } else {
+                $link->update(['doParse' => false]);
                 $data = self::startParsing($link->link, 'page')['data'];
                 $page_num = explode('p=', $link->link)[1];
 
@@ -114,7 +115,7 @@ class ParserController extends Controller
                     $created_page->images()->createMany($data['imgs']);
                 }
 
-                $link->update(['doParse' => false]);
+//                $link->update(['doParse' => false]);
                 DB::table('parsing_status')->where('parse_type', '=', 'page')->increment('Progress');
 
                 ParsePageJob::dispatch()->onQueue('doParsePages');

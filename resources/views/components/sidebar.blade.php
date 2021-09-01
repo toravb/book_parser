@@ -77,7 +77,12 @@
                                 <p>Меню парсинга</p>
                             </a>
                         </li>
-
+                        <li class="nav-item">
+                            <a href="{{route('books.show')}}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Книги</p>
+                            </a>
+                        </li>
                     </ul>
                 </li>
             </ul>

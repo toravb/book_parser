@@ -32,21 +32,33 @@ class Kernel extends ConsoleKernel
     {
 
 
-//        $schedule->command('queue:restart')
-//            ->everyThirtyMinutes();
+        $schedule->command('queue:restart')
+            ->everyThirtyMinutes();
 
-//        $schedule->command('queue:work --name=doParsePages --queue=doParsePages  --daemon')
-//            ->everyMinute()
-//            ->withoutOverlapping();
-//        $schedule->command('queue:work --name=doParseImages --queue=doParseImages  --daemon')
-//            ->everyMinute()
-//            ->withoutOverlapping();
-//        $schedule->command('queue:work --name=doParseBooks --queue=doParseBooks  --daemon')
-//            ->everyMinute()
-//            ->withoutOverlapping();
-//        $schedule->command('queue:work --queue=default --timeout=0  --daemon')
-//            ->everyMinute()
-//            ->withoutOverlapping();
+        $schedule->command('queue:work --name=doParsePages --queue=doParsePages  --daemon')
+            ->everyMinute()
+            ->withoutOverlapping();
+        $schedule->command('queue:work --name=doParsePages1 --queue=doParsePages  --daemon')
+            ->everyMinute()
+            ->withoutOverlapping();
+        $schedule->command('queue:work --name=doParsePages2 --queue=doParsePages  --daemon')
+            ->everyMinute()
+            ->withoutOverlapping();
+        $schedule->command('queue:work --name=doParsePages3 --queue=doParsePages  --daemon')
+            ->everyMinute()
+            ->withoutOverlapping();
+        $schedule->command('queue:work --name=doParsePages4 --queue=doParsePages  --daemon')
+            ->everyMinute()
+            ->withoutOverlapping();
+        $schedule->command('queue:work --name=doParseImages --queue=doParseImages  --daemon')
+            ->everyMinute()
+            ->withoutOverlapping();
+        $schedule->command('queue:work --name=doParseBooks --queue=doParseBooks  --daemon')
+            ->everyMinute()
+            ->withoutOverlapping();
+        $schedule->command('queue:work --queue=default --timeout=0  --daemon')
+            ->everyMinute()
+            ->withoutOverlapping();
 //
         $loveread = DB::table('sites')->where('site', '=', 'loveread.ec')
             ->select()->first();

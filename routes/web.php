@@ -25,6 +25,8 @@ Route::post('/parser/links', 'App\Http\Controllers\Parser\Admin\ParserController
 Route::post('/parser/books', 'App\Http\Controllers\Parser\Admin\ParserController@parseBooks')->middleware(['auth'])->name('parser.parse.books');
 Route::post('/parser/pages', 'App\Http\Controllers\Parser\Admin\ParserController@parsePages')->middleware(['auth'])->name('parser.parse.pages');
 Route::post('/parser/images', 'App\Http\Controllers\Parser\Admin\ParserController@parseImages')->middleware(['auth'])->name('parser.parse.images');
+Route::get('/books', 'App\Http\Controllers\Parser\Admin\PageController@books')->middleware(['auth'])->name('books.show');
+Route::get('/books/{id}', 'App\Http\Controllers\Parser\Admin\PageController@booksPages')->middleware(['auth'])->name('books.item');
 
 Route::post('/add/auth', 'App\Http\Controllers\Parser\Admin\ProxySettingsController@addAuthData')->middleware(['auth'])->name('add.authdata');
 Route::get('/parser/pages', 'App\Http\Controllers\Parser\Admin\PageController@index')->middleware(['auth'])->name( 'parser.pages');

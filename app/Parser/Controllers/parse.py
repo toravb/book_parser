@@ -59,7 +59,6 @@ def parseBook(uri, domain):
     soup = req(link)
     page = BeautifulSoup(soup.read(), 'lxml')
     td_center_color = page.find_all('tr', class_='td_center_color')
-
     # text = td_center_color[0].find('p').text
     text = td_center_color[0].find('p').get_text(strip=True, separator='|').split('|')
 
@@ -130,6 +129,9 @@ def parsePage(uri, type, domain):
                 i+=1
             return urls
         else:
+            for img in content.find_all('img'):
+                img['src'] = '/' + img['src']
+
             page_content = {}
             page_content['content'] = content.prettify()
             page_content['imgs'] = []
