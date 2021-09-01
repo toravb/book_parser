@@ -60,10 +60,10 @@ def parseBook(uri, domain):
     page = BeautifulSoup(soup.read(), 'lxml')
     td_center_color = page.find_all('tr', class_='td_center_color')
 
-    text = td_center_color[0].find('p').text
+    # text = td_center_color[0].find('p').text
+    text = td_center_color[0].find('p').get_text(strip=True, separator='|').split('|')
 
     book = {}
-    book['book'] = {}
     book['search'] = {}
     book['database'] = {}
     authors = []
@@ -72,36 +72,33 @@ def parseBook(uri, domain):
     year = ''
     publishers = []
 
-    for r in method(text, ['Автор:'], 'Название:'):
-        parse_authors = r
-        parse_authors = parse_authors.split(',')
-        i = 0
-        while i < len(parse_authors):
-            authors.append({'author': parse_authors[i].lstrip().rstrip()})
-            i += 1
+    i = 0
+    while i < len(text):
+        if text[i] == 'Серия:':
+            series += text[i + 1]
+        elif text[i] == 'Автор:':
+            author = text[i+1].split(',')
 
-    for r in method(text, ['Название:'], 'Издательство:'):
-        title += r
-    for r in method(text, ['Издательство:'], 'Год:'):
-        parse_publishers = r
-        parse_publishers = parse_publishers.split(',')
-        i = 0
-        while i < len(parse_publishers):
-            publishers.append({'publisher': parse_publishers[i].lstrip().rstrip()})
-            i += 1
-
-    for r in method(text, ['Год:'], 'ISBN:'):
-        year += r
-    for r in method(text, ['Серия:'], 'Автор:'):
-        series += r
+            j = 0
+            while j < len(author):
+                authors.append(author[j])
+                j += 1
+        elif text[i] == 'Название:':
+            title += text[i + 1]
+        elif text[i] == 'Издательство:':
+            publisher = text[i + 1].split(',')
+            j = 0
+            while j < len(publisher):
+                publishers.append(publisher[j])
+                j += 1
+        elif text[i] == 'Год:':
+            year += text[i + 1]
+        i += 2
 
     book['search']['authors'] = authors
     book['search']['publishers'] = publishers
-    book['search']['year'] = {'year': year}
-    book['search']['series'] = {'series': series}
-
-    print(book['search'])
-    exit()
+    book['search']['year'] = year
+    book['search']['series'] = series
 
     book['database']['text'] = re.sub(r'\s+', ' ', td_center_color[1].find('p', class_='span_str').text)
     book['database']['title'] = title
@@ -110,15 +107,6 @@ def parseBook(uri, domain):
 
     jsonData = json.dumps(book)
     print(jsonData)
-
-
-def method(string, words, end_word):
-    segments = string.split(end_word)
-    counter = 0
-    while counter < len(words):
-        data = segments[counter].split(words[counter])[-1]
-        counter += 1
-        yield data.strip()
 
 
 def parsePage(uri, type, domain):

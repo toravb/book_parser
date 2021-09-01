@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Jobs\ParseBookJob;
 use App\Jobs\ParsePageJob;
 use App\Models\Author;
+use App\Models\AuthorToBook;
 use App\Models\Book;
 use App\Models\BookLink;
 use App\Models\Publisher;
+use App\Models\PublisherToBook;
 use App\Models\Series;
 use App\Models\Year;
 use Illuminate\Http\Request;
@@ -37,24 +39,41 @@ class ParserController extends Controller
         $link = BookLink::where('doParse', true)->first();
         $data = self::startParsing($link->link, 'book')['data'];
 
-        print_r($data);
-//        exit();
-//
-//        $book = $data['book']['params'];
-//        $book['author_id'] = (isset($data['book']['search']['author']))?Author::firstOrCreate(['author' =>$data['book']['search']['author']])->id:null;
-//        $book['series_id'] = (isset($data['book']['search']['series']))?Series::firstOrCreate(['series' =>$data['book']['search']['series']])->id:null;
-//        $book['publisher_id'] = (isset($data['book']['search']['publisher']))?Publisher::firstOrCreate(['publisher' =>$data['book']['search']['publisher']])->id:null;
-//        $book['year_id'] = (isset($data['book']['search']['year']))?Year::firstOrCreate(['year' =>$data['book']['search']['year']])->id:null;
-//        $book['params'] = json_encode($book['params']);
-//        $book['link'] = $link->link;
-//
-//        $created_book = Book::firstOrCreate($book);
-//        $created_book->image()->create($data['image']);
-//        $created_book->pageLinks()->createMany($data['pages']);
-//
+        $book = $data['database'];
+        $search = $data['search'];
+        $book['year_id'] = ($search['year'] != null)?Year::firstOrCreate(['year' => $search['year']])->id:null;
+        $book['series_id'] = ($search['series'] != null)?Series::firstOrCreate(['series' => $search['series']])->id:null;
+        $book['link'] = $link;
+        $created_book = Book::firstOrCreate($book);
+        $author_to_books = [];
+        $publisher_to_books = [];
+        if (count($search['authors']) > 0) {
+            foreach ($search['authors'] as $author){
+                $author_to_books[] = ['author_id' => Author::firstOrCreate(['author' => $author])->id, 'book_id' => $created_book->id];
+            }
+        }
+        if (count($search['publishers']) > 0) {
+            foreach ($search['publishers'] as $publisher){
+                $publisher_to_books[] = ['publisher_id' => Publisher::firstOrCreate(['publisher' => $publisher])->id, 'book_id' => $created_book->id];
+            }
+        }
+        if (count($author_to_books) > 0){
+            foreach ($author_to_books as $insert){
+                AuthorToBook::firstOrCreate($insert);
+            }
+        }
+        if (count($publisher_to_books) > 0){
+            foreach ($publisher_to_books as $insert){
+                PublisherToBook::firstOrCreate($insert);
+            }
+        }
+
+        $created_book->image()->create($data['image']);
+        $created_book->pageLinks()->createMany($data['pages']);
+
         $link->update(['doParse' => false]);
-//        DB::table('parsing_status')->where('parse_type', '=', 'books')->increment('Progress');
-//
+        DB::table('parsing_status')->where('parse_type', '=', 'books')->increment('Progress');
+
         ParseBookJob::dispatch()->onQueue('doParseBooks');
     }
 
