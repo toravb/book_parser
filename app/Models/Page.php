@@ -12,7 +12,10 @@ class Page extends Model
     public $timestamps = false;
 
     protected $fillable = [
-
+        'link',
+        'content',
+        'page_number',
+        'book_id'
     ];
 
     public static function create($fields){

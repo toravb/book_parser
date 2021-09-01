@@ -128,7 +128,7 @@
                 </span>
                 @endif
                 @foreach($parsingStatus as $element)
-                    @if($element->parse_type == 'pages' && $element->Count != 0)
+                    @if($element->parse_type == 'page' && $element->Count != 0)
 
                         <span class="sr-only">
                             @if($element->last_parsing != null)

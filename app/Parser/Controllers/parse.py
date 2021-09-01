@@ -130,15 +130,16 @@ def parsePage(uri, type, domain):
         else:
             page_content = {}
             page_content['content'] = content.prettify()
-            page_content['img'] = []
+            page_content['imgs'] = []
             imgs = content.find_all('img')
             i = 0
             while i < len(imgs):
-                page_content['img'].append(domain+'/'+imgs[i].get('src'))
+                page_content['imgs'].append({'link': domain+'/'+imgs[i].get('src')})
                 i += 1
             # print(content.encode('utf-8'))
 
-            print(page_content)
+            jsonData = json.dumps(page_content)
+            print(jsonData)
 
         # f = open('1.html', 'w', encoding='utf-8')
         # f.write(str(content))
