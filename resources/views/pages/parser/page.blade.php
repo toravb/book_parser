@@ -15,6 +15,7 @@
                     <th>Издатели</th>
                     <th>Год</th>
                     <th>Превью</th>
+                    <th>Параметры</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -63,6 +64,16 @@
                         </td>
                         <td>
                             {{$book->text}}
+                        </td>
+                        <td>
+                            <?php
+                            $params = json_decode($book->params, true);
+                            ?>
+                            @if($params)
+                                @foreach($params as $key => $value)
+                                    {{$key}} {{$value}}<br>
+                                @endforeach
+                            @endif
                         </td>
                     </tr>
                 @endforeach

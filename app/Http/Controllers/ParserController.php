@@ -51,6 +51,7 @@ class ParserController extends Controller
             $book['year_id'] = ($search['year'] != null) ? Year::firstOrCreate(['year' => $search['year']])->id : null;
             $book['series_id'] = ($search['series'] != null) ? Series::firstOrCreate(['series' => $search['series']])->id : null;
             $book['link'] = $link->link;
+            $book['params'] = json_encode($data['params']);
             $created_book = Book::firstOrCreate($book);
             if ($created_book->wasRecentlyCreated) {
 

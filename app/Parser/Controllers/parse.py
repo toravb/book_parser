@@ -66,6 +66,7 @@ def parseBook(uri, domain):
     book = {}
     book['search'] = {}
     book['database'] = {}
+    book['params'] = {}
     authors = []
     title = ''
     series = ''
@@ -74,6 +75,7 @@ def parseBook(uri, domain):
 
     i = 0
     while i < len(text):
+        book['params'][text[i]] = text[i + 1]
         if text[i] == 'Серия:':
             series += text[i + 1]
         elif text[i] == 'Автор:':
