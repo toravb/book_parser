@@ -40,95 +40,101 @@ class ParserController extends Controller
 
     public static function parseBooks()
     {
-        $link = BookLink::where('doParse', true)->first();
-        if (!$link){
-            DB::table('sites')->where('site', '=', 'loveread.ec')->update(['doParseBooks' => false]);
-        }else {
-            $data = self::startParsing($link->link, 'book')['data'];
+        if (DB::table('sites')->where('site', '=', 'loveread.ec')->first()->doParseBooks) {
+            $link = BookLink::where('doParse', true)->first();
+            if (!$link) {
+                DB::table('sites')->where('site', '=', 'loveread.ec')->update(['doParseBooks' => false]);
+            } else {
+                $data = self::startParsing($link->link, 'book')['data'];
 
-            $book = $data['database'];
-            $search = $data['search'];
-            $book['year_id'] = ($search['year'] != null) ? Year::firstOrCreate(['year' => $search['year']])->id : null;
-            $book['series_id'] = ($search['series'] != null) ? Series::firstOrCreate(['series' => $search['series']])->id : null;
-            $book['link'] = $link->link;
-            $book['params'] = json_encode($data['params']);
-            $created_book = Book::firstOrCreate($book);
-            if ($created_book->wasRecentlyCreated) {
+                $book = $data['database'];
+                $search = $data['search'];
+                $book['year_id'] = ($search['year'] != null) ? Year::firstOrCreate(['year' => $search['year']])->id : null;
+                $book['series_id'] = ($search['series'] != null) ? Series::firstOrCreate(['series' => $search['series']])->id : null;
+                $book['link'] = $link->link;
+                $book['params'] = json_encode($data['params']);
+                $created_book = Book::firstOrCreate($book);
+                if ($created_book->wasRecentlyCreated) {
 
-                $author_to_books = [];
-                $publisher_to_books = [];
-                if (count($search['authors']) > 0) {
-                    foreach ($search['authors'] as $author) {
-                        $author_to_books[] = ['author_id' => Author::firstOrCreate(['author' => $author])->id, 'book_id' => $created_book->id];
+                    $author_to_books = [];
+                    $publisher_to_books = [];
+                    if (count($search['authors']) > 0) {
+                        foreach ($search['authors'] as $author) {
+                            $author_to_books[] = ['author_id' => Author::firstOrCreate(['author' => $author])->id, 'book_id' => $created_book->id];
+                        }
                     }
-                }
-                if (count($search['publishers']) > 0) {
-                    foreach ($search['publishers'] as $publisher) {
-                        $publisher_to_books[] = ['publisher_id' => Publisher::firstOrCreate(['publisher' => $publisher])->id, 'book_id' => $created_book->id];
+                    if (count($search['publishers']) > 0) {
+                        foreach ($search['publishers'] as $publisher) {
+                            $publisher_to_books[] = ['publisher_id' => Publisher::firstOrCreate(['publisher' => $publisher])->id, 'book_id' => $created_book->id];
+                        }
                     }
-                }
-                if (count($author_to_books) > 0) {
-                    foreach ($author_to_books as $insert) {
-                        AuthorToBook::firstOrCreate($insert);
+                    if (count($author_to_books) > 0) {
+                        foreach ($author_to_books as $insert) {
+                            AuthorToBook::firstOrCreate($insert);
+                        }
                     }
-                }
-                if (count($publisher_to_books) > 0) {
-                    foreach ($publisher_to_books as $insert) {
-                        PublisherToBook::firstOrCreate($insert);
+                    if (count($publisher_to_books) > 0) {
+                        foreach ($publisher_to_books as $insert) {
+                            PublisherToBook::firstOrCreate($insert);
+                        }
                     }
+
+                    $created_book->image()->create($data['image']);
+                    $created_book->pageLinks()->createMany($data['pages']);
+
                 }
 
-                $created_book->image()->create($data['image']);
-                $created_book->pageLinks()->createMany($data['pages']);
 
+                $link->update(['doParse' => false]);
+                DB::table('parsing_status')->where('parse_type', '=', 'books')->increment('Progress');
+
+                ParseBookJob::dispatch()->onQueue('doParseBooks');
             }
-
-
-            $link->update(['doParse' => false]);
-            DB::table('parsing_status')->where('parse_type', '=', 'books')->increment('Progress');
-
-            ParseBookJob::dispatch()->onQueue('doParseBooks');
         }
     }
 
     public static function parsePages()
     {
-        $link = PageLink::where('doParse', true)->first();
-        if (!$link){
-            DB::table('sites')->where('site', '=', 'loveread.ec')->update(['doParsePages' => false]);
-        }else {
-            $data = self::startParsing($link->link, 'page')['data'];
-            $page_num = explode('p=', $link->link)[1];
+        if (DB::table('sites')->where('site', '=', 'loveread.ec')->first()->doParsePages) {
+            $link = PageLink::where('doParse', true)->first();
+            if (!$link) {
+                DB::table('sites')->where('site', '=', 'loveread.ec')->update(['doParsePages' => false]);
+            } else {
+                $data = self::startParsing($link->link, 'page')['data'];
+                $page_num = explode('p=', $link->link)[1];
 
-            $created_page = Page::firstOrCreate(
-                ['link' => $link->link, 'book_id' => $link->book_id],
-                ['content' => $data['content'], 'page_number' => $page_num]
-            );
-            if ($page_num == 1) {
-                unset($data['imgs'][0]);
+                $created_page = Page::firstOrCreate(
+                    ['link' => $link->link, 'book_id' => $link->book_id],
+                    ['content' => $data['content'], 'page_number' => $page_num]
+                );
+                if ($page_num == 1) {
+                    unset($data['imgs'][0]);
+                }
+                if ($created_page->wasRecentlyCreated) {
+                    $created_page->images()->createMany($data['imgs']);
+                }
+
+                $link->update(['doParse' => false]);
+                DB::table('parsing_status')->where('parse_type', '=', 'page')->increment('Progress');
+
+                ParsePageJob::dispatch()->onQueue('doParsePages');
             }
-            if ($created_page->wasRecentlyCreated) {
-                $created_page->images()->createMany($data['imgs']);
-            }
-
-            $link->update(['doParse' => false]);
-            DB::table('parsing_status')->where('parse_type', '=', 'page')->increment('Progress');
-
-            ParsePageJob::dispatch()->onQueue('doParsePages');
         }
     }
 
     public static function parseImage()
     {
-        $link = Image::where('doParse', true)->first();
-        if (!$link){
-            DB::table('sites')->where('site', '=', 'loveread.ec')->update(['doParseImages' => false]);
-        }else {
-            $data = self::startParsing($link->link, 'image')['data'];
+        if (DB::table('sites')->where('site', '=', 'loveread.ec')->first()->doParseImages) {
+            $link = Image::where('doParse', true)->first();
+            if (!$link) {
+                DB::table('sites')->where('site', '=', 'loveread.ec')->update(['doParseImages' => false]);
+            } else {
+                $data = self::startParsing($link->link, 'image')['data'];
 
-            $link->update(['doParse' => false]);
-            DB::table('parsing_status')->where('parse_type', '=', 'images')->increment('Progress');
-            ParseImageJob::dispatch()->onQueue('doParseImages');
+                $link->update(['doParse' => false]);
+                DB::table('parsing_status')->where('parse_type', '=', 'images')->increment('Progress');
+                ParseImageJob::dispatch()->onQueue('doParseImages');
+            }
         }
     }
 
