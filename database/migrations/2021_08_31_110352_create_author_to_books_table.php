@@ -19,10 +19,12 @@ class CreateAuthorToBooksTable extends Migration
             $table->foreignId('book_id');
             $table->foreign('author_id')
                 ->references('id')
-                ->on('authors');
+                ->on('authors')
+                ->onDelete('cascade');
             $table->foreign('book_id')
                 ->references('id')
-                ->on('books');
+                ->on('books')
+                ->onDelete('cascade');;
         });
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Parser\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Book;
 use App\Models\Parser_item;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,11 +17,9 @@ class PageController extends Controller
      */
     public function index(Request $request)
     {
-//        $items = Parser_item::all();
-//        return view('pages.parser.page', ['items' => $items]);
         $sites = DB::table('sites')->select('site')->get();
-        $pages = DB::table('parser_items')->where('Articul', '!=', 0)->paginate(100);
-        return view('pages.parser.page', ['items' => $pages], compact('sites', $sites));
+        $books = Book::with('authors')->with('publishers')->with('image')->with('series')->paginate(15);
+        return view('pages.parser.page', ['books' => $books], compact('sites', $sites));
     }
 
     public function showProxies(){

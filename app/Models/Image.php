@@ -12,7 +12,8 @@ class Image extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'link'
+        'link',
+        'doParse'
     ];
 
     public static function create($fields){

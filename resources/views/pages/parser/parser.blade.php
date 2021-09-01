@@ -147,7 +147,6 @@
                     @endif
                 @endforeach
             </div>
-
             <div class="form-container">
                 <form class="form-horizontal" method="post" action="{{route('parser.parse.images')}}">
                     {{ csrf_field() }}

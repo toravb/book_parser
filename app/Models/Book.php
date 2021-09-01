@@ -38,16 +38,6 @@ class Book extends Model
         return $this->belongsTo(Year::class, 'year_id', 'id');
     }
 
-    public function publisher()
-    {
-        return $this->belongsTo(Publisher::class, 'publisher_id', 'id');
-    }
-
-    public function author()
-    {
-        return $this->belongsTo(Author::class, 'author_id', 'id');
-    }
-
     public function series()
     {
         return $this->belongsTo(Series::class, 'series_id', 'id');
@@ -56,6 +46,32 @@ class Book extends Model
     public function pageLinks()
     {
         return $this->hasMany(PageLink::class, 'book_id', 'id');
+    }
+
+    public function authors()
+    {
+        return $this->belongsToMany(
+            Author::class,
+            AuthorToBook::class,
+            'book_id',
+            'author_id',
+            'id',
+            'id',
+            'authors'
+        );
+    }
+
+    public function publishers()
+    {
+        return $this->belongsToMany(
+            Publisher::class,
+            PublisherToBook::class,
+            'book_id',
+            'publisher_id',
+            'id',
+            'id',
+            'publishers'
+        );
     }
 
     public function pages()

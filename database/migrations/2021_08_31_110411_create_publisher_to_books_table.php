@@ -19,10 +19,12 @@ class CreatePublisherToBooksTable extends Migration
             $table->foreignId('book_id');
             $table->foreign('publisher_id')
                 ->references('id')
-                ->on('publishers');
+                ->on('publishers')
+                ->onDelete('cascade');;
             $table->foreign('book_id')
                 ->references('id')
-                ->on('books');
+                ->on('books')
+                ->onDelete('cascade');;
         });
     }
 

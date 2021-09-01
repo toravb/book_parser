@@ -48,10 +48,10 @@ class Kernel extends ConsoleKernel
         $loveread = DB::table('sites')->where('site', '=', 'loveread.ec')
             ->select()->first();
 
-//        $schedule->job((new ParseLinksJob)::dispatchIf($loveread->doParseLinks)->onQueue('default'))->everyFiveMinutes();
-//        $schedule->job((new ParseBookJob)::dispatchIf($loveread->doParseBooks)->onQueue('doParseBooks'))->everyFiveMinutes();
+        $schedule->job((new ParseLinksJob)::dispatchIf($loveread->doParseLinks)->onQueue('default'))->everyFiveMinutes();
+        $schedule->job((new ParseBookJob)::dispatchIf($loveread->doParseBooks)->onQueue('doParseBooks'))->everyFiveMinutes();
         $schedule->job((new ParsePageJob)::dispatchIf($loveread->doParsePages)->onQueue('doParsePages'))->everyFiveMinutes();
-//        $schedule->job((new ParseImageJob())::dispatchIf($loveread->doParseImages)->onQueue('doParseImages'))->everyFiveMinutes();
+        $schedule->job((new ParseImageJob())::dispatchIf($loveread->doParseImages)->onQueue('doParseImages'))->everyFiveMinutes();
     }
 
     /**

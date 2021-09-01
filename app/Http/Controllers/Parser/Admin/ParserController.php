@@ -25,6 +25,7 @@ class ParserController extends Controller
         $sites = DB::table('sites')->select()->get();
         $data = null;
         $parsingStatus = null;
+
         foreach ($sites as $site){
             if ($site->site == $request->site){
                 $data = $site;

@@ -2,7 +2,8 @@
 
 namespace App\Jobs;
 
-use App\Parser\Controllers\SiteMap;
+use App\Http\Controllers\ParserController;
+
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -33,6 +34,6 @@ class ParseImageJob implements ShouldQueue
     public function handle()
     {
         //
-        SiteMap::getProductImage(1);
+        ParserController::parseImage();
     }
 }

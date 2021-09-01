@@ -23,7 +23,7 @@ def returnError(code, uri=None, mess=None):
 
 def req(uri):
     # Пауза парсера
-    # time.sleep(random.randrange(91, 1127) / 1000)
+    time.sleep(random.randrange(91, 1127) / 1000)
     try:
         req = urllib.request.Request(uri, headers={'User-Agent': 'Mozilla/5.0'})
         webpage = urllib.request.urlopen(req)
@@ -167,13 +167,18 @@ def parsePage(uri, type, domain):
 def parseImage(uri):
     image = req(uri).read()
     path = uri.split('/')
-    img_dir = path[3] + '/' + path[4] + '/'
+    img_dir = 'public/'
+    i = 3
+    while i < len(path)-1:
+        img_dir += path[i] + '/'
+        i += 1
     if not os.path.isdir(img_dir):
         os.makedirs(img_dir)
-    f = open(img_dir + path[5], "wb")
+    f = open(img_dir + path[len(path)-1], "wb")
     f.write(image)
     f.close()
-    print(True)
+    jsonData = json.dumps('success')
+    print(jsonData)
 
 
 def parse(argv):
