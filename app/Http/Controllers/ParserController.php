@@ -51,9 +51,9 @@ class ParserController extends Controller
                 $search = $data['search'];
                 $book['year_id'] = ($search['year'] != null) ? Year::firstOrCreate(['year' => $search['year']])->id : null;
                 $book['series_id'] = ($search['series'] != null) ? Series::firstOrCreate(['series' => $search['series']])->id : null;
-                $book['link'] = $link->link;
+//                $book['link'] = $link->link;
                 $book['params'] = json_encode($data['params']);
-                $created_book = Book::firstOrCreate($book);
+                $created_book = Book::firstOrCreate(['link' => $link->link], $book);
                 if ($created_book->wasRecentlyCreated) {
 
                     $author_to_books = [];
@@ -144,7 +144,7 @@ class ParserController extends Controller
 
 //        $proxy_ip = self::getProxy();
         $proxy_ip = 0;
-        $command = escapeshellcmd("python ".app_path('Parser/Controllers'). "/parse.py ". $url .
+        $command = escapeshellcmd("python3 ".app_path('Parser/Controllers'). "/parse.py ". $url .
             " " . $proxy_ip . " " . $type);
         $output = shell_exec($command);
         $data = json_decode($output, true);

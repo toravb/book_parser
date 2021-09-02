@@ -133,6 +133,7 @@ def parsePage(uri, type, domain):
                 img['src'] = '/' + img['src']
             for a in content.find_all('a'):
                 a['href'] = '#'
+                a['target'] = ''
 
             page_content = {}
             page_content['content'] = content.prettify()
