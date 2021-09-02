@@ -58,6 +58,7 @@ def parseBook(uri, domain):
     link = uri
     soup = req(link)
     page = BeautifulSoup(soup.read(), 'lxml')
+    td_top_color = page.find_all('tr', class_='td_top_color')[0]
     td_center_color = page.find_all('tr', class_='td_center_color')
     # text = td_center_color[0].find('p').text
     text = td_center_color[0].find('p').get_text(strip=True, separator='|').split('|')
@@ -71,7 +72,7 @@ def parseBook(uri, domain):
     series = ''
     year = ''
     publishers = []
-
+    book['params']['Жанр:'] = td_top_color.find('p').text.split('Жанр ')[1]
     i = 0
     while i < len(text):
         book['params'][text[i]] = text[i + 1]
