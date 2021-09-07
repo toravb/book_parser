@@ -127,13 +127,16 @@ def parsePage(uri, type, domain):
 
         if type == 'link':
             nav = page.find('div', class_='navigation').find_all('a')
-            pages = nav[len(nav) - 2].text
-            url = uri[:-1]
             urls = []
-            i = 1
-            while i <= int(pages):
-                urls.append({'link': url+str(i)})
-                i+=1
+            if len(nav) > 0:
+                pages = nav[len(nav) - 2].text
+                url = uri[:-1]
+                i = 1
+                while i <= int(pages):
+                    urls.append({'link': url+str(i)})
+                    i+=1
+            else:
+                urls.append({'link': uri})
             return urls
         else:
             for img in content.find_all('img'):
