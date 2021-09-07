@@ -80,8 +80,12 @@ class ParserController extends Controller
                     }
 
                     $created_book->image()->create($data['image']);
-                    $created_book->pageLinks()->createMany($data['pages']);
-
+                    if ($data['pages'] == 0){
+                        $created_book->active = false;
+                        $created_book->save();
+                    } else {
+                        $created_book->pageLinks()->createMany($data['pages']);
+                    }
                 }
 
 
