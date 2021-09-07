@@ -61,8 +61,6 @@ def parseBook(uri, domain):
     td_center_color = page.find_all('tr', class_='td_center_color')
     # text = td_center_color[0].find('p').text
     text = td_center_color[0].find('p').get_text(strip=True, separator='$$').split('$$')
-    print(text)
-    exit()
     book = {}
     book['search'] = {}
     book['database'] = {}
