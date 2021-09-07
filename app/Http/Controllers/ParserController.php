@@ -149,7 +149,7 @@ class ParserController extends Controller
 
 //        $proxy_ip = self::getProxy();
         $proxy_ip = 0;
-        $command = escapeshellcmd("python ".app_path('Parser/Controllers'). "/parse.py ". $url .
+        $command = escapeshellcmd("python3 ".app_path('Parser/Controllers'). "/parse.py ". $url .
             " " . $proxy_ip . " " . $type);
         $output = shell_exec($command);
         $data = json_decode($output, true);
