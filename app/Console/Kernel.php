@@ -38,18 +38,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('queue:work --name=doParsePages --queue=doParsePages  --daemon')
             ->everyMinute()
             ->withoutOverlapping();
-        $schedule->command('queue:work --name=doParsePages1 --queue=doParsePages  --daemon')
-            ->everyMinute()
-            ->withoutOverlapping();
-        $schedule->command('queue:work --name=doParsePages2 --queue=doParsePages  --daemon')
-            ->everyMinute()
-            ->withoutOverlapping();
-        $schedule->command('queue:work --name=doParsePages3 --queue=doParsePages  --daemon')
-            ->everyMinute()
-            ->withoutOverlapping();
-        $schedule->command('queue:work --name=doParsePages4 --queue=doParsePages  --daemon')
-            ->everyMinute()
-            ->withoutOverlapping();
         $schedule->command('queue:work --name=doParseImages --queue=doParseImages  --daemon')
             ->everyMinute()
             ->withoutOverlapping();
