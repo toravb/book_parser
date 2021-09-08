@@ -112,7 +112,15 @@ def parseBook(uri, domain):
 def parsePage(uri, type, domain):
 
         soup = req(uri)
-        page = BeautifulSoup(soup.read(), 'lxml')
+        read_page = soup.read()
+        try:
+            page = BeautifulSoup(read_page, 'lxml')
+            nav = page.find('div', class_='navigation').find_all('a')
+        except Exception:
+            page = BeautifulSoup(read_page, 'html.parser')
+            # print(page)
+        # if page.find('div', class_='navigation') is None:
+        #     page = BeautifulSoup(soup.read(), 'lxml')
         error = page.find('em')
         if error is not None and error.text == 'Эта книга удалена по требованию правообладателя. Прочитать её на нашем сайте нельзя.':
             return 0
@@ -126,6 +134,7 @@ def parsePage(uri, type, domain):
         content = page.find('div', class_='MsoNormal')
 
         if type == 'link':
+
             nav = page.find('div', class_='navigation').find_all('a')
             urls = []
             if len(nav) > 0:
