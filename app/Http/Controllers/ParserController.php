@@ -45,6 +45,7 @@ class ParserController extends Controller
             if (!$link) {
                 DB::table('sites')->where('site', '=', 'loveread.ec')->update(['doParseBooks' => false]);
             } else {
+                $link->update(['doParse' => 2]);
                 $data = self::startParsing($link->link, 'book')['data'];
 
                 $book = $data['database'];
@@ -80,12 +81,8 @@ class ParserController extends Controller
                     }
 
                     $created_book->image()->create($data['image']);
-                    if ($data['pages'] == 0){
-                        $created_book->active = false;
-                        $created_book->save();
-                    } else {
-                        $created_book->pageLinks()->createMany($data['pages']);
-                    }
+                    $created_book->pageLinks()->createMany($data['pages']);
+
                 }
 
 
@@ -104,7 +101,7 @@ class ParserController extends Controller
             if (!$link) {
                 DB::table('sites')->where('site', '=', 'loveread.ec')->update(['doParsePages' => false]);
             } else {
-                $link->update(['doParse' => false]);
+                $link->update(['doParse' => 2]);
                 $data = self::startParsing($link->link, 'page')['data'];
                 $page_num = explode('p=', $link->link)[1];
 
@@ -119,7 +116,7 @@ class ParserController extends Controller
                     $created_page->images()->createMany($data['imgs']);
                 }
 
-//                $link->update(['doParse' => false]);
+                $link->update(['doParse' => false]);
                 DB::table('parsing_status')->where('parse_type', '=', 'page')->increment('Progress');
 
                 ParsePageJob::dispatch()->onQueue('doParsePages');
@@ -134,6 +131,7 @@ class ParserController extends Controller
             if (!$link) {
                 DB::table('sites')->where('site', '=', 'loveread.ec')->update(['doParseImages' => false]);
             } else {
+                $link->update(['doParse' => 2]);
                 $data = self::startParsing($link->link, 'image')['data'];
 
                 $link->update(['doParse' => false]);
