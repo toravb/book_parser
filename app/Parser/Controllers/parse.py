@@ -215,13 +215,13 @@ def parse(argv):
     domain_str = list(filter(None, url.split('/')))
     domain = domain_str[0] + '//' + domain_str[1]
     # # Подключение прокси
-    # socket.setdefaulttimeout(60)
-    # proxy_support = urllib.request.ProxyHandler({
-    #     'http': proxy_host,
-    #     'https': proxy_host,
-    # })
-    # opener = urllib.request.build_opener(proxy_support)
-    # urllib.request.install_opener(opener)
+    socket.setdefaulttimeout(60)
+    proxy_support = urllib.request.ProxyHandler({
+        'http': proxy_host,
+        'https': proxy_host,
+    })
+    opener = urllib.request.build_opener(proxy_support)
+    urllib.request.install_opener(opener)
 
     if type == 'links':
         parseLinks(uri, domain)
